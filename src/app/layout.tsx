@@ -12,6 +12,16 @@ export const metadata: Metadata = {
   description:
     "Aplikasi simulasi tabungan berjangka. Semua transaksi bersifat simulasi tanpa uang sungguhan.",
   manifest: "/manifest.json",
+  themeColor: "#047857",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TabungSans",
+  },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
