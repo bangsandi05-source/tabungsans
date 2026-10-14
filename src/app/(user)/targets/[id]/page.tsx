@@ -1,11 +1,11 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import TargetActions from "./target-actions";
 
-
 function formatRupiah(n: number) {
-  return "Rp" + n.toLocaleString("id-ID");
+  return "Rp " + n.toLocaleString("id-ID");
 }
 
 export default async function TargetDetailPage({
@@ -42,97 +42,145 @@ export default async function TargetDetailPage({
   );
 
   return (
-    <main className="max-w-2xl mx-auto w-full px-6 py-8">
-      <h1 className="text-2xl font-bold mb-1">{target.name}</h1>
+    <main className="px-5 pt-6 space-y-6">
+      <div className="flex items-center gap-3">
+        <Link
+          href="/targets"
+          className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 text-sm shadow-sm"
+        >
+          ←
+        </Link>
+        <div>
+          <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">
+            Detail Target
+          </span>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            {target.name}
+          </h1>
+        </div>
+      </div>
 
-      {/* Saldo & progres */}
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 mb-4">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Saldo simulasi</p>
-        <p className="text-3xl font-bold tracking-tight mt-1">{formatRupiah(saldo)}</p>
-        {persen != null && (
-          <>
-            <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2 mt-3">
+      {/* FinTech Card Saldo Pos Ini */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-6 text-white shadow-xl shadow-slate-900/10">
+        <div className="text-[11px] font-semibold tracking-wider uppercase text-slate-300 mb-1">
+          Saldo Terkumpul di Pos Ini
+        </div>
+        <div className="text-3xl font-extrabold tracking-tight tabular-nums">
+          {formatRupiah(saldo)}
+        </div>
+
+        {persen != null ? (
+          <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
               <div
-                className="bg-emerald-500 h-2 rounded-full transition-all"
+                className="bg-emerald-400 h-full rounded-full transition-all duration-500"
                 style={{ width: `${persen}%` }}
               />
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
-              {persen}% dari {formatRupiah(target.targetAmount!)} — sisa{" "}
-              {formatRupiah(Math.max(target.targetAmount! - saldo, 0))}
-            </p>
-          </>
+            <div className="flex justify-between text-[11px] text-slate-300">
+              <span>{persen}% dari {formatRupiah(target.targetAmount!)}</span>
+              <span>Sisa: {formatRupiah(Math.max(target.targetAmount! - saldo, 0))}</span>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-4 pt-3 border-t border-white/10 text-xs text-slate-400">
+            Target nominal fleksibel tanpa batas akhir nominal.
+          </p>
         )}
       </div>
 
-      {/* Info tanggal */}
-      <div className="grid grid-cols-2 gap-3 mb-6 text-sm">
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <p className="text-zinc-400 text-xs">Target tercapai</p>
-          <p className="font-medium">{target.targetDate.toLocaleDateString("id-ID")}</p>
+      {/* Info Aturan Tarik & Jatuh Tempo */}
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+          <p className="text-slate-400 font-medium">Jatuh Tempo</p>
+          <p className="font-bold text-slate-800 mt-0.5">
+            {target.targetDate.toLocaleDateString("id-ID")}
+          </p>
         </div>
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <p className="text-zinc-400 text-xs">Boleh tarik mulai</p>
-          <p className="font-medium">
+        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+          <p className="text-slate-400 font-medium">Izin Penarikan</p>
+          <p
+            className={`font-bold mt-0.5 ${
+              canWithdraw ? "text-emerald-600" : "text-amber-600"
+            }`}
+          >
             {target.withdrawalOpenDate.toLocaleDateString("id-ID")}
           </p>
         </div>
       </div>
 
-      {/* Tombol aksi */}
-      <TargetActions
-        targetId={target.id}
-        canWithdraw={canWithdraw}
-        hasPendingWithdrawal={hasPendingWithdrawal}
-        saldo={saldo}
-      />
+      {/* Aksi Setor & Tarik */}
+      <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+        <TargetActions
+          targetId={target.id}
+          canWithdraw={canWithdraw}
+          hasPendingWithdrawal={hasPendingWithdrawal}
+          saldo={saldo}
+        />
+      </div>
 
-      {/* Riwayat transaksi target ini */}
-      <h2 className="text-lg font-semibold mt-8 mb-3">Riwayat Transaksi</h2>
-      {target.transactions.length === 0 ? (
-        <p className="text-zinc-400 text-sm">Belum ada transaksi.</p>
-      ) : (
-        <div className="space-y-2">
-          {target.transactions.map((tx) => (
-            <div
-              key={tx.id}
-              className="flex justify-between items-center rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 text-sm"
-            >
-              <div>
-                <p className="font-medium">
-                  {tx.type === "DEPOSIT" ? "Setoran" : "Penarikan"}
-                </p>
-                <p className="text-xs text-zinc-400">
-                  {tx.createdAt.toLocaleDateString("id-ID")} —{" "}
-                  <span
-                    className={
-                      tx.status === "APPROVED"
-                        ? "text-emerald-600"
-                        : tx.status === "REJECTED"
-                        ? "text-red-500"
-                        : "text-amber-500"
-                    }
-                  >
-                    {tx.status === "APPROVED"
-                      ? "Disetujui"
-                      : tx.status === "REJECTED"
-                      ? "Ditolak"
-                      : "Menunggu"}
-                  </span>
-                </p>
-              </div>
-              <p
-                className={`font-medium ${
-                  tx.type === "DEPOSIT" ? "text-emerald-600" : "text-red-500"
-                }`}
+      {/* Riwayat Mutasi Pos Ini */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+          Mutasi Transaksi Pos Ini
+        </h2>
+
+        {target.transactions.length === 0 ? (
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 text-center text-xs text-slate-400 shadow-sm">
+            Belum ada permohonan transaksi untuk target ini.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {target.transactions.map((tx) => (
+              <div
+                key={tx.id}
+                className="p-3.5 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-between shadow-sm"
               >
-                {tx.type === "DEPOSIT" ? "+" : "-"}
-                {formatRupiah(tx.amount)}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        tx.type === "DEPOSIT" ? "bg-emerald-500" : "bg-red-500"
+                      }`}
+                    />
+                    <span className="font-semibold text-slate-900 text-xs">
+                      {tx.type === "DEPOSIT" ? "Setoran Simulasi" : "Penarikan Simulasi"}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {tx.createdAt.toLocaleDateString("id-ID")} •{" "}
+                    <span
+                      className={
+                        tx.status === "APPROVED"
+                          ? "text-emerald-600 font-medium"
+                          : tx.status === "REJECTED"
+                          ? "text-red-500 font-medium"
+                          : "text-amber-600 font-medium"
+                      }
+                    >
+                      {tx.status === "APPROVED"
+                        ? "Disetujui Admin"
+                        : tx.status === "REJECTED"
+                        ? "Ditolak Admin"
+                        : "Menunggu Verifikasi Admin"}
+                    </span>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span
+                    className={`font-bold text-sm tabular-nums ${
+                      tx.type === "DEPOSIT" ? "text-emerald-600" : "text-red-600"
+                    }`}
+                  >
+                    {tx.type === "DEPOSIT" ? "+" : "-"}
+                    {formatRupiah(tx.amount)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

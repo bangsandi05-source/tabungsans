@@ -19,20 +19,20 @@ export default function AdminActions({ txId }: { txId: string }) {
   }
 
   return (
-    <div className="flex gap-2 mt-2">
+    <div className="flex gap-2">
       <button
         onClick={() => handle("APPROVED")}
         disabled={loading}
-        className="rounded-lg bg-emerald-600 text-white px-4 py-1.5 text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+        className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold text-xs shadow-sm shadow-emerald-600/20 transition-all disabled:opacity-60"
       >
-        Setujui
+        {loading ? "..." : "✓ Setujui"}
       </button>
       <button
         onClick={() => handle("REJECTED")}
         disabled={loading}
-        className="rounded-lg border border-red-300 text-red-600 px-4 py-1.5 text-sm font-medium hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 disabled:opacity-50 transition-colors"
+        className="flex-1 py-2 px-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 active:scale-95 text-red-600 font-semibold text-xs transition-all disabled:opacity-60"
       >
-        Tolak
+        {loading ? "..." : "✕ Tolak"}
       </button>
     </div>
   );

@@ -2,9 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
-
 function formatRupiah(n: number) {
-  return "Rp" + n.toLocaleString("id-ID");
+  return "Rp " + n.toLocaleString("id-ID");
 }
 
 export default async function DashboardPage() {
@@ -27,78 +26,152 @@ export default async function DashboardPage() {
     return sum + saldo;
   }, 0);
 
-  return (
-    <main className="max-w-2xl mx-auto w-full px-6 py-8">
-      <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
-      <p className="text-zinc-500 dark:text-zinc-400 mb-6">
-        Selamat datang, {session!.user!.name}!
-      </p>
+  const userInitial = session?.user?.name
+    ? session.user.name.charAt(0).toUpperCase()
+    : "P";
 
-      {/* Ringkasan */}
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 mb-6">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Total saldo simulasi</p>
-        <p className="text-3xl font-bold tracking-tight mt-1">{formatRupiah(totalSaldo)}</p>
-        <p className="text-xs text-zinc-400 mt-1">{targets.length} target aktif</p>
+  return (
+    <main className="px-5 pt-6 space-y-6">
+      {/* Top Bar Pengguna */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs text-slate-400 font-medium">Rekening Penabung</p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            {session?.user?.name}
+          </h1>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center border border-emerald-200 shadow-sm text-sm">
+          {userInitial}
+        </div>
       </div>
 
-      {/* Daftar target ringkas */}
-      {targets.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-8 text-center text-zinc-400">
-          Belum ada target tabungan.
-          <br />
-          <Link
-            href="/targets/new"
-            className="inline-block mt-4 rounded-lg bg-zinc-900 text-white px-5 py-2 text-sm font-medium hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 transition-colors"
-          >
-            + Buat Target Baru
-          </Link>
+      {/* FinTech Balance Card */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-700 via-emerald-800 to-slate-900 p-6 text-white shadow-xl shadow-emerald-900/15">
+        <div className="absolute -right-6 -bottom-8 w-36 h-36 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="flex justify-between items-start relative z-10">
+          <div>
+            <span className="inline-block text-[11px] font-semibold tracking-wider uppercase text-emerald-200/90 mb-1">
+              Total Saldo Tersimpan
+            </span>
+            <div className="text-3xl font-extrabold tracking-tight tabular-nums">
+              {formatRupiah(totalSaldo)}
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-white/10 text-emerald-100 backdrop-blur-md border border-white/10">
+            Simulasi Aktif
+          </span>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {targets.map((t) => {
-            const saldo = t.transactions.reduce(
-              (s, tx) => s + (tx.type === "DEPOSIT" ? tx.amount : -tx.amount),
-              0
-            );
-            const persen =
-              t.targetAmount != null && t.targetAmount > 0
-                ? Math.min(Math.round((saldo / t.targetAmount) * 100), 100)
-                : null;
 
-            return (
-              <Link
-                key={t.id}
-                href={`/targets/${t.id}`}
-                className="block rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <p className="font-semibold">{t.name}</p>
-                  <p className="text-sm font-medium">{formatRupiah(saldo)}</p>
-                </div>
-                {persen != null && (
-                  <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-2">
-                    <div
-                      className="bg-emerald-500 h-2 rounded-full transition-all"
-                      style={{ width: `${persen}%` }}
-                    />
-                  </div>
-                )}
-                {persen != null && (
-                  <p className="text-xs text-zinc-400 mt-1">
-                    {persen}% dari {formatRupiah(t.targetAmount!)}
-                  </p>
-                )}
-              </Link>
-            );
-          })}
+        <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-emerald-100/80 relative z-10">
+          <span>{targets.length} Target Berjalan</span>
           <Link
             href="/targets/new"
-            className="block text-center text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 py-3 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-emerald-900 font-semibold text-xs shadow-sm hover:bg-emerald-50 transition-all active:scale-95"
           >
-            + Buat Target Baru
+            + Target Baru
           </Link>
         </div>
-      )}
+      </div>
+
+      {/* Bagian Target Tabungan */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Target Tabungan
+          </h2>
+          <Link
+            href="/targets"
+            className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold"
+          >
+            Lihat Semua
+          </Link>
+        </div>
+
+        {targets.length === 0 ? (
+          <div className="p-8 rounded-2xl bg-white border border-slate-200/80 text-center space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
+              🎯
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-800">
+                Belum ada target tabungan
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Mulai atur pos tabungan pertama Anda sekarang
+              </p>
+            </div>
+            <Link
+              href="/targets/new"
+              className="inline-block px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm transition-all"
+            >
+              Buat Target Sekarang
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {targets.slice(0, 3).map((t) => {
+              const saldo = t.transactions.reduce(
+                (s, tx) => s + (tx.type === "DEPOSIT" ? tx.amount : -tx.amount),
+                0
+              );
+              const persen =
+                t.targetAmount != null && t.targetAmount > 0
+                  ? Math.min(Math.round((saldo / t.targetAmount) * 100), 100)
+                  : null;
+
+              return (
+                <Link
+                  key={t.id}
+                  href={`/targets/${t.id}`}
+                  className="block p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-emerald-300 shadow-sm hover:shadow-md transition-all group"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors text-sm">
+                        {t.name}
+                      </h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Target: {t.targetDate.toLocaleDateString("id-ID")}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-slate-900 text-sm tabular-nums">
+                        {formatRupiah(saldo)}
+                      </span>
+                      {t.targetAmount != null && (
+                        <p className="text-[11px] text-slate-400">
+                          dari {formatRupiah(t.targetAmount)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {persen != null ? (
+                    <div className="mt-3 space-y-1">
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${persen}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[11px] text-slate-400 font-medium">
+                        <span>Tercapai {persen}%</span>
+                        <span>
+                          Sisa {formatRupiah(Math.max(t.targetAmount! - saldo, 0))}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-400 italic">
+                      Target nominal fleksibel (bebas nominal)
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
