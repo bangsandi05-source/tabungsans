@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -7,12 +7,15 @@ const fontSans = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#047857",
+};
+
 export const metadata: Metadata = {
   title: "TabungSans — Platform Simulasi Tabungan Terpercaya",
   description:
     "Aplikasi simulasi tabungan berjangka. Semua transaksi bersifat simulasi tanpa uang sungguhan.",
   manifest: "/manifest.json",
-  themeColor: "#047857",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
