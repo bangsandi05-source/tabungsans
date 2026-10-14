@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+function formatRupiah(n: number) {
+  return "Rp " + n.toLocaleString("id-ID");
+}
+
 export default function TargetActions({
   targetId,
   canWithdraw,
@@ -121,11 +125,22 @@ export default function TargetActions({
         </button>
       </div>
 
-      <p className="text-[11px] text-slate-400">
-        {mode === "deposit"
-          ? "Saldo akan bertambah setelah diverifikasi oleh Admin."
-          : "Saldo akan berkurang setelah disetujui oleh Admin."}
-      </p>
+      <div className="flex justify-between items-center text-[11px] text-slate-400">
+        <span>
+          {mode === "deposit"
+            ? "Saldo akan bertambah setelah diverifikasi Admin."
+            : "Saldo akan berkurang setelah disetujui Admin."}
+        </span>
+        {mode === "withdraw" && saldo > 0 && (
+          <button
+            type="button"
+            onClick={() => setAmount(String(saldo))}
+            className="font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 transition-colors"
+          >
+            Tarik Semua ({formatRupiah(saldo)})
+          </button>
+        )}
+      </div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -135,6 +150,7 @@ export default function TargetActions({
           <input
             type="number"
             min={1}
+            max={mode === "withdraw" ? saldo : undefined}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Nominal"
