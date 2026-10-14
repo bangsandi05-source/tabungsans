@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,19 +16,23 @@ export default function LoginPage() {
     const email = form.get("email") as string;
     const password = form.get("password") as string;
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
-
-    if (res?.error) {
-      setError("Email atau kata sandi tidak cocok.");
-    } else {
-      router.push("/dashboard");
-      router.refresh();
+      if (res?.error) {
+        setLoading(false);
+        setError("Email atau kata sandi tidak cocok.");
+      } else {
+        // Gunakan full window redirect agar middleware dan session cookie terbaca sempurna
+        window.location.href = "/dashboard";
+      }
+    } catch {
+      setLoading(false);
+      setError("Terjadi kesalahan koneksi ke server.");
     }
   }
 
