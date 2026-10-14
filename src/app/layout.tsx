@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "TabungSans — Simulasi Tabungan",
   description:
     "Aplikasi simulasi tabungan berjangka. Semua transaksi bersifat simulasi dan tidak melibatkan uang sungguhan.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
