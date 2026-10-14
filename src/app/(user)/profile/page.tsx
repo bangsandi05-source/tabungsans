@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import SignOutButton from "./sign-out-button";
+import ChangePasswordForm from "./change-password-form";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -45,6 +46,11 @@ export default async function ProfilePage() {
             <span className="font-medium text-slate-700">Diverifikasi Admin</span>
           </div>
         </div>
+      </div>
+
+      {/* Bagian Keamanan Kata Sandi */}
+      <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+        <ChangePasswordForm />
       </div>
 
       <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">

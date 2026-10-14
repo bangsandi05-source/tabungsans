@@ -21,7 +21,7 @@ export default async function AdminPage() {
     orderBy: { createdAt: "asc" },
   });
 
-  // Semua Pengguna (Role USER) beserta saldo
+  // Semua Pengguna (Role USER murni) beserta detail target & saldo masing-masing
   const usersRaw = await prisma.user.findMany({
     where: { role: "USER" },
     include: {
@@ -45,23 +45,32 @@ export default async function AdminPage() {
     take: 100,
   });
 
-  // Kalkulasi data bersih untuk Client Component
+  // Kalkulasi data bersih dan terstruktur untuk Client Component
   const users = usersRaw.map((u) => {
-    const totalSaldo = u.targets.reduce((sumT, t) => {
-      const s = t.transactions.reduce(
-        (acc, tx) => acc + (tx.type === "DEPOSIT" ? tx.amount : -tx.amount),
+    const targets = u.targets.map((t) => {
+      const saldoTarget = t.transactions.reduce(
+        (s, tx) => s + (tx.type === "DEPOSIT" ? tx.amount : -tx.amount),
         0
       );
-      return sumT + s;
-    }, 0);
+      return {
+        id: t.id,
+        name: t.name,
+        targetAmount: t.targetAmount,
+        withdrawalOpenDate: t.withdrawalOpenDate.toLocaleDateString("id-ID"),
+        saldo: saldoTarget,
+      };
+    });
+
+    const totalSaldo = targets.reduce((sum, t) => sum + t.saldo, 0);
 
     return {
       id: u.id,
       name: u.name,
       email: u.email,
       createdAt: u.createdAt.toLocaleDateString("id-ID"),
-      targetsCount: u.targets.length,
+      targetsCount: targets.length,
       totalSaldo,
+      targets,
     };
   });
 

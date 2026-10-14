@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AdminActions from "./admin-actions";
 import CreateUserModal from "./create-user-modal";
+import UserDetailModal, { type UserDetail } from "./user-detail-modal";
 import SignOutButton from "../(user)/profile/sign-out-button";
 
 function formatRupiah(n: number) {
@@ -23,15 +24,6 @@ type PendingTx = {
   };
 };
 
-type UserData = {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-  targetsCount: number;
-  totalSaldo: number;
-};
-
 type GlobalTx = {
   id: string;
   type: "DEPOSIT" | "WITHDRAWAL";
@@ -50,7 +42,7 @@ type GlobalTx = {
 type AdminViewProps = {
   adminEmail: string;
   totalDanaKelolaan: number;
-  users: UserData[];
+  users: UserDetail[];
   pending: PendingTx[];
   allTransactions: GlobalTx[];
 };
@@ -69,6 +61,8 @@ export default function AdminView({
     "ALL" | "PENDING" | "APPROVED" | "REJECTED"
   >("ALL");
 
+  const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
+
   const filteredHistory = allTransactions.filter((tx) => {
     if (historyFilter === "ALL") return true;
     return tx.status === historyFilter;
@@ -76,6 +70,14 @@ export default function AdminView({
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+      {/* Modal Detail Penabung */}
+      {selectedUser && (
+        <UserDetailModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+
       {/* SIDEBAR NAVIGASI KIRI */}
       <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200/80 md:min-h-screen flex flex-col justify-between shrink-0">
         <div>
@@ -199,7 +201,7 @@ export default function AdminView({
         </div>
       </aside>
 
-      {/* KONTEN UTAMA BERDASARKAN SUB MENU */}
+      {/* KONTEN UTAMA */}
       <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-6xl">
         {/* SUB MENU 1: IKHTISAR */}
         {activeTab === "overview" && (
@@ -213,7 +215,6 @@ export default function AdminView({
               </p>
             </div>
 
-            {/* 3 Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -258,7 +259,6 @@ export default function AdminView({
               </div>
             </div>
 
-            {/* Antrean Pending Ringkas */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
@@ -436,7 +436,7 @@ export default function AdminView({
                         <th className="py-3 px-4">Email</th>
                         <th className="py-3 px-4">Target Aktif</th>
                         <th className="py-3 px-4 text-right">Saldo Tersimpan</th>
-                        <th className="py-3 px-4 text-right">Terdaftar Sejak</th>
+                        <th className="py-3 px-4 text-center">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -452,8 +452,13 @@ export default function AdminView({
                           <td className="py-3.5 px-4 text-right font-bold text-slate-900 tabular-nums">
                             {formatRupiah(u.totalSaldo)}
                           </td>
-                          <td className="py-3.5 px-4 text-right text-slate-400">
-                            {u.createdAt}
+                          <td className="py-3.5 px-4 text-center">
+                            <button
+                              onClick={() => setSelectedUser(u)}
+                              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-[11px] transition-all shadow-sm active:scale-95"
+                            >
+                              Lihat Detail →
+                            </button>
                           </td>
                         </tr>
                       ))}
