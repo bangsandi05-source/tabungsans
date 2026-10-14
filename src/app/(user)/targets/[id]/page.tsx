@@ -89,23 +89,24 @@ export default async function TargetDetailPage({
         )}
       </div>
 
-      {/* Info Aturan Tarik & Jatuh Tempo */}
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-          <p className="text-slate-400 font-medium">Jatuh Tempo</p>
-          <p className="font-bold text-slate-800 mt-0.5">
-            {target.targetDate.toLocaleDateString("id-ID")}
-          </p>
-        </div>
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-          <p className="text-slate-400 font-medium">Izin Penarikan</p>
-          <p
-            className={`font-bold mt-0.5 ${
-              canWithdraw ? "text-emerald-600" : "text-amber-600"
-            }`}
-          >
+      {/* Info Status Buka Tabungan */}
+      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex items-center justify-between text-xs">
+        <div>
+          <p className="text-slate-400 font-medium">Tanggal Buka Tabungan</p>
+          <p className="font-bold text-slate-800 text-sm mt-0.5">
             {target.withdrawalOpenDate.toLocaleDateString("id-ID")}
           </p>
+        </div>
+        <div>
+          {canWithdraw ? (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              ✓ Tabungan Terbuka (Bisa Ditarik)
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              🔒 Terkunci hingga {target.withdrawalOpenDate.toLocaleDateString("id-ID")}
+            </span>
+          )}
         </div>
       </div>
 

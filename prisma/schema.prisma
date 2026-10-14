@@ -39,8 +39,8 @@ model Target {
   userId             String
   name               String
   targetAmount       Int?     // nullable: jika kosong, progres % tidak ditampilkan
-  targetDate         DateTime // tanggal target tercapai
-  withdrawalOpenDate DateTime // tanggal mulai boleh tarik saldo
+  targetDate         DateTime? // opsional / tidak wajib
+  withdrawalOpenDate DateTime // tanggal buka tabungan (boleh tarik saldo)
   createdAt          DateTime @default(now())
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -6,10 +6,13 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, targetAmount, targetDate, withdrawalOpenDate } = await req.json();
+  const { name, targetAmount, withdrawalOpenDate } = await req.json();
 
-  if (!name || !targetDate || !withdrawalOpenDate) {
-    return NextResponse.json({ error: "Nama, tanggal target, dan tanggal tarik wajib diisi." }, { status: 400 });
+  if (!name || !withdrawalOpenDate) {
+    return NextResponse.json(
+      { error: "Nama dan tanggal buka tabungan wajib diisi." },
+      { status: 400 }
+    );
   }
 
   if (targetAmount != null && (typeof targetAmount !== "number" || targetAmount < 0)) {
@@ -21,7 +24,6 @@ export async function POST(req: Request) {
       userId: session.user!.id!,
       name,
       targetAmount: targetAmount ?? null,
-      targetDate: new Date(targetDate),
       withdrawalOpenDate: new Date(withdrawalOpenDate),
     },
   });

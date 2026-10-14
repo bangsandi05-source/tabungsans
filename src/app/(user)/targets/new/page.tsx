@@ -23,7 +23,6 @@ export default function NewTargetPage() {
       body: JSON.stringify({
         name: form.get("name"),
         targetAmount: targetAmountRaw ? Number(targetAmountRaw) : null,
-        targetDate: form.get("targetDate"),
         withdrawalOpenDate: form.get("withdrawalOpenDate"),
       }),
     });
@@ -52,7 +51,7 @@ export default function NewTargetPage() {
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Target Baru
           </h1>
-          <p className="text-xs text-slate-400">Tentukan rencana finansial Anda</p>
+          <p className="text-xs text-slate-400">Tentukan rencana tabungan Anda</p>
         </div>
       </div>
 
@@ -66,7 +65,7 @@ export default function NewTargetPage() {
               name="name"
               type="text"
               required
-              placeholder="Contoh: Beli Laptop Baru, Dana Darurat"
+              placeholder="Contoh: Beli Laptop Baru, Dana Liburan"
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/15 transition-all"
             />
           </div>
@@ -88,34 +87,23 @@ export default function NewTargetPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/15 transition-all"
             />
             <p className="text-[11px] text-slate-400 mt-1 leading-normal">
-              Kosongkan jika target tabungan ini bersifat fleksibel tanpa batasan angka tertentu.
+              Jika dikosongkan, tabungan fleksibel tanpa batasan target angka.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                Tanggal Target Tercapai
-              </label>
-              <input
-                name="targetDate"
-                type="date"
-                required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/15 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                Boleh Tarik Mulai Dari
-              </label>
-              <input
-                name="withdrawalOpenDate"
-                type="date"
-                required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/15 transition-all"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+              Tanggal Buka Tabungan
+            </label>
+            <input
+              name="withdrawalOpenDate"
+              type="date"
+              required
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/15 transition-all"
+            />
+            <p className="text-[11px] text-slate-400 mt-1 leading-normal">
+              Saldo tabungan hanya dapat diajukan untuk penarikan pada atau setelah tanggal ini.
+            </p>
           </div>
 
           {error && (
@@ -124,7 +112,7 @@ export default function NewTargetPage() {
             </div>
           )}
 
-          <div className="pt-3">
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading}

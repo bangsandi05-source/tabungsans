@@ -81,7 +81,7 @@ export default async function TargetsPage() {
                       {t.name}
                     </h2>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      Jatuh tempo: {t.targetDate.toLocaleDateString("id-ID")}
+                      Buka tabungan: {t.withdrawalOpenDate.toLocaleDateString("id-ID")}
                     </p>
                   </div>
                   <div className="text-right">
