@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  targets Target[]
+}
+
+model Target {
+  id                 String   @id @default(cuid())
+  userId             String
+  name               String
+  targetAmount       Int?     // nullable: jika kosong, progres % tidak ditampilkan
+  targetDate         DateTime // tanggal target tercapai
+  withdrawalOpenDate DateTime // tanggal mulai boleh tarik saldo
+  createdAt          DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+}
+
+model Transaction {
+  id         String            @id @default(cuid())
+  targetId   String
+  type       TransactionType
+  amount     Int               // dalam rupiah (bilangan bulat)
+  status     TransactionStatus @default(PENDING)
+  note       String?
+  createdAt  DateTime          @default(now())
+  reviewedAt DateTime?
+
+  target Target @relation(fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([targetId])
+  @@index([targetId, type, status]) // query: cek pending withdrawal per target
+}
