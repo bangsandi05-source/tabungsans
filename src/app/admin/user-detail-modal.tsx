@@ -35,6 +35,8 @@ export default function UserDetailModal({
   const router = useRouter();
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -63,6 +65,26 @@ export default function UserDetailModal({
       setSuccess("Kata sandi nasabah berhasil di-reset!");
       setNewPassword("");
       setTimeout(() => setSuccess(""), 3000);
+      router.refresh();
+    }
+  }
+
+  async function handleDeleteUser() {
+    setError("");
+    setDeleting(true);
+
+    const res = await fetch(`/api/admin/users/${user.id}`, {
+      method: "DELETE",
+    });
+
+    setDeleting(false);
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Gagal menghapus penabung.");
+      setShowDeleteConfirm(false);
+    } else {
+      onClose();
       router.refresh();
     }
   }
@@ -118,7 +140,7 @@ export default function UserDetailModal({
               Nasabah ini belum membuat pos target tabungan.
             </p>
           ) : (
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
               {user.targets.map((t) => (
                 <div
                   key={t.id}
@@ -151,7 +173,7 @@ export default function UserDetailModal({
                 Bantuan Kata Sandi (Lupa Password)
               </h4>
               <p className="text-[11px] text-slate-500 leading-normal mt-0.5">
-                Password tersimpan aman (terenkripsi). Jika penabung lupa kata sandi, buatkan kata sandi sementara baru di bawah ini.
+                Password tersimpan aman (terenkripsi). Jika penabung lupa kata sandi, buatkan kata sandi baru di bawah ini.
               </p>
             </div>
           </div>
@@ -183,6 +205,51 @@ export default function UserDetailModal({
               <p className="text-[11px] text-emerald-700 font-semibold">{success}</p>
             )}
           </form>
+        </div>
+
+        {/* Zona Bahaya: Hapus Akun Penabung */}
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-slate-700">Hapus Akun Penabung</p>
+            <p className="text-[10px] text-slate-400">
+              {user.totalSaldo === 0
+                ? "Saldo Rp 0. Akun siap dibersihkan dari sistem."
+                : "Hanya bisa dihapus jika total saldo Rp 0."}
+            </p>
+          </div>
+
+          {user.totalSaldo === 0 && (
+            <div>
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs transition-all"
+                >
+                  Hapus Akun
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-red-600 font-semibold">Yakin hapus?</span>
+                  <button
+                    type="button"
+                    onClick={handleDeleteUser}
+                    disabled={deleting}
+                    className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-all disabled:opacity-50"
+                  >
+                    {deleting ? "Menghapus..." : "Ya, Hapus Permanen"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="text-xs text-slate-400 hover:text-slate-600"
+                  >
+                    Batal
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

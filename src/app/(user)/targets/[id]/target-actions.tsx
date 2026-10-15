@@ -22,6 +22,8 @@ export default function TargetActions({
   const [mode, setMode] = useState<"idle" | "deposit" | "withdraw">("idle");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState("");
 
   async function submit(type: "DEPOSIT" | "WITHDRAWAL") {
@@ -54,53 +56,118 @@ export default function TargetActions({
     }
   }
 
+  async function handleDeleteTarget() {
+    setError("");
+    setDeleting(true);
+
+    const res = await fetch(`/api/targets/${targetId}`, {
+      method: "DELETE",
+    });
+
+    setDeleting(false);
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Gagal menghapus target.");
+      setShowDeleteConfirm(false);
+    } else {
+      router.push("/targets");
+      router.refresh();
+    }
+  }
+
   if (mode === "idle") {
     return (
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Aksi Transaksi Simulasi
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => {
-              setError("");
-              setMode("deposit");
-            }}
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs shadow-md shadow-emerald-600/20 transition-all"
-          >
-            <span className="text-sm">+</span> Ajukan Setoran
-          </button>
-          <button
-            onClick={() => {
-              setError("");
-              if (!canWithdraw) {
-                setError(
-                  "Penarikan belum diizinkan karena belum memasuki tanggal pembukaan saldo."
-                );
-                return;
-              }
-              if (hasPendingWithdrawal) {
-                setError(
-                  "Masih ada permohonan penarikan yang menunggu persetujuan Admin."
-                );
-                return;
-              }
-              if (saldo <= 0) {
-                setError("Saldo target ini masih Rp 0.");
-                return;
-              }
-              setMode("withdraw");
-            }}
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.98] text-slate-700 font-semibold text-xs transition-all"
-          >
-            <span className="text-sm">↑</span> Ajukan Penarikan
-          </button>
+      <div className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+            Aksi Transaksi Simulasi
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => {
+                setError("");
+                setMode("deposit");
+              }}
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs shadow-md shadow-emerald-600/20 transition-all"
+            >
+              <span className="text-sm">+</span> Ajukan Setoran
+            </button>
+            <button
+              onClick={() => {
+                setError("");
+                if (!canWithdraw) {
+                  setError(
+                    "Penarikan belum diizinkan karena belum memasuki tanggal pembukaan saldo."
+                  );
+                  return;
+                }
+                if (hasPendingWithdrawal) {
+                  setError(
+                    "Masih ada permohonan penarikan yang menunggu persetujuan Admin."
+                  );
+                  return;
+                }
+                if (saldo <= 0) {
+                  setError("Saldo target ini masih Rp 0.");
+                  return;
+                }
+                setMode("withdraw");
+              }}
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.98] text-slate-700 font-semibold text-xs transition-all"
+            >
+              <span className="text-sm">↑</span> Ajukan Penarikan
+            </button>
+          </div>
         </div>
+
         {error && (
           <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
             {error}
           </div>
         )}
+
+        {/* Tombol Tutup/Hapus Target (Jika Saldo Sudah 0) */}
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span className="text-[11px] text-slate-400">
+            {saldo === 0
+              ? "Saldo sudah Rp 0. Pos ini siap ditutup."
+              : "Pos hanya bisa ditutup jika saldo sudah Rp 0."}
+          </span>
+
+          {saldo === 0 && !hasPendingWithdrawal && (
+            <>
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline transition-colors"
+                >
+                  Tutup / Hapus Target
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-slate-600 font-medium">Yakin?</span>
+                  <button
+                    type="button"
+                    onClick={handleDeleteTarget}
+                    disabled={deleting}
+                    className="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
+                  >
+                    {deleting ? "Menghapus..." : "Ya, Hapus"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="text-[11px] text-slate-400 hover:text-slate-600"
+                  >
+                    Batal
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     );
   }
